@@ -1,44 +1,10 @@
 import React from "react";
 
 class CartItem extends React.Component {
-    constructor() {
-        super(); // this is used to call parent class constructor
-        this.state = {
-            price: 999,
-            title: "Mobile Phone",
-            qty: 1,
-            img: ''
-        }
-    }
-
-    increaseQty = () => {
-        // setState 1st form
-        // this.setState({
-        //     qty: this.state.qty + 1
-        // });
-
-        // setState 1st form - if previous state required use this.
-        this.setState((prevState) => {
-            return {
-                qty: prevState.qty + 1
-            }
-        });
-    }
-
-    decreaseQty = () => {
-        if (this.state.qty > 1) {
-            this.setState((prevState) => {
-                return {
-                    qty: prevState.qty - 1
-                }
-            });
-        } else {
-            return;
-        }
-    }
 
     render() {
-        const { price, title, qty } = this.state;
+        const { price, title, qty } = this.props.product;
+        const { product, onIncreaseQty, onDecreaseQty, onDelete } = this.props;
         return (
             <div className="cart-item">
                 <div className="left-block" style={styles.image}>
@@ -50,9 +16,18 @@ class CartItem extends React.Component {
                     <div style={{ color: 'grey' }}>Qty: {qty}</div>
                     <div className="cart-item-actions">
                         {/* Buttons */}
-                        <i className="actions-icons fa-solid fa-plus" onClick={this.increaseQty}></i>
-                        <i className="actions-icons fa-solid fa-minus" onClick={this.decreaseQty}></i>
-                        <i className="actions-icons fas fa-trash-alt"></i>
+                        <i
+                            className="actions-icons fa-solid fa-plus"
+                            onClick={() => onIncreaseQty(product)}
+                        ></i>
+                        <i
+                            className="actions-icons fa-solid fa-minus"
+                            onClick={() => onDecreaseQty(product)}
+                        ></i>
+                        <i
+                            className="actions-icons fas fa-trash-alt"
+                            onClick={() => onDelete(product.id)}
+                        ></i>
                     </div>
                 </div>
             </div>
