@@ -1,44 +1,52 @@
 import React from "react";
 import Cart from "./Cart";
 import Navbar from "./Navbar";
+import {db} from './firebase-config'; 
+import { collection, onSnapshot, addDoc, updateDoc, doc, deleteDoc } from "firebase/firestore"; 
 
 class App extends React.Component {
   constructor() {
     super(); // this is used to call parent class constructor
     this.state = {
-      products: [
-        {
-          price: 100,
-          title: "Watch",
-          qty: 12,
-          img: '',
-          id: 1
-        },
-        {
-          price: 999,
-          title: "Mobile Phone",
-          qty: 1,
-          img: '',
-          id: 2
-        },
-        {
-          price: 1000,
-          title: "Laptop",
-          qty: 2,
-          img: '',
-          id: 3
-        }
-      ]
+      products: [],
+      loading: true
     }
+  }
+
+  componentDidMount () {
+    
+    onSnapshot(collection(db, "products") , (snapshot) => {
+      const products = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      });
+
+      this.setState({
+        products: products,
+        loading: false
+      });
+    }, 
+    (err) => {
+      console.log('Error: ',err);
+    });
+    
   }
 
   handleIncreaseQty = (product) => {
     const { products } = this.state;
     const index = products.indexOf(product);
 
-    products[index].qty += 1;
-    this.setState({
-      product
+    // products[index].qty += 1;
+    // this.setState({
+    //   product
+    // });
+    
+    updateDoc(doc(db, 'products', products[index].id), {
+      qty: products[index].qty + 1
+    })
+    .catch((err) => {
+      console.log("error in updateing: ", err);
     });
   }
 
@@ -47,21 +55,33 @@ class App extends React.Component {
       const { products } = this.state;
       const index = products.indexOf(product);
 
-      products[index].qty -= 1;
-      this.setState({
-        product
+      // products[index].qty -= 1;
+      // this.setState({
+      //   product
+      // });
+
+      updateDoc(doc(db, 'products', products[index].id), {
+        qty: products[index].qty - 1
+      })
+      .catch((err) => {
+        console.log("error in updateing: ", err);
       });
     }
     else return;
   }
 
   handleDeleteProduct = (id) => {
-    const { products } = this.state;
+    // const { products } = this.state;
 
-    const item = products.filter((item) => item.id !== id);
+    // const item = products.filter((item) => item.id !== id);
 
-    this.setState({
-      products: item
+    // this.setState({
+    //   products: item
+    // });
+
+    deleteDoc(doc(db, 'products', id))
+    .catch((err) => {
+      console.log("error in deleting: ", err);
     });
   }
 
@@ -89,17 +109,28 @@ class App extends React.Component {
     return totalPrice;
   }
 
+  addProduct = async() => {
+    await addDoc(collection(db, 'products'), {
+      img: '',
+      qty: 2,
+      title: 'Washing Machine',
+      price: 9090
+    });
+  }
+
   render() {
-    const { products } = this.state;
+    const { products, loading } = this.state;
     return (
       <div className="App">
         <Navbar count={this.getCartCount()} />
+        <button onClick={this.addProduct} style={{ padding: 10, margin: 10 }}>Add Product</button>
         <Cart 
           products={products}
           onIncreaseQty={this.handleIncreaseQty}
           onDecreaseQty={this.handleDecreaseQty}
           onDelete={this.handleDeleteProduct}
         />
+        {loading && <h1 style={{margin: 10}}>Loading...</h1>}
         <div style={{fontSize: 20, padding: 20, fontWeight: 'revert'}}>Total: {this.getCartTotalPrice()}</div>
 
       </div>
